@@ -33,7 +33,7 @@ services:
       - key: ARCJET_ENV
         value: production
 
-  - type: static
+  - type: static_site
     name: chatify-frontend
     rootDir: walter-frontend
     buildCommand: npm install && npm run build
