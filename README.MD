@@ -4,6 +4,19 @@
   <img src="walter-frontend/Screenshot%202026-02-06%20084538.png" alt="Screenshot" width="800" />
 </p>
 
+<h2 align="center">🚀 Live Demo</h2>
+
+<p align="center">
+  🔗 <strong>Project Link:</strong><br>
+  👉 <a href="https://chatify-1-6nr8.onrender.com">https://chatify-1-6nr8.onrender.com</a>
+</p>
+
+<p align="center">
+  ⚠️ <strong>Note:</strong> This application is hosted on <b>Render (Free Tier)</b>.<br>
+  Due to cold start behavior, the server may take <b>15–20 seconds</b> to wake up.<br>
+  A loading screen will appear during this time. Please wait patiently.
+</p>
+
 Highlights:
 
 - ⚡ Real-time Messaging via Socket.io
