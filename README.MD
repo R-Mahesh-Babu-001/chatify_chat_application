@@ -1,6 +1,8 @@
 <h1 align="center">✨ Full-Stack Chat App with Auth & Emails ✨</h1>
 
-<img src="walter-frontend/Screenshot%202026-02-06%20084538.png" alt="Screenshot" width="800" />
+<p align="center">
+  <img src="walter-frontend/Screenshot%202026-02-06%20084538.png" alt="Screenshot" width="800" />
+</p>
 
 Highlights:
 
