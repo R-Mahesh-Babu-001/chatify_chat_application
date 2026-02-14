@@ -20,6 +20,7 @@
 Highlights:
 
 -  Real-time Messaging via Socket.io
+-  Complete PWA integration with "Add to homescreen"
 -  Online/Offline Presence Indicators
 -  Notification & Typing Sounds (with toggle)
 -  Welcome Emails on Signup (Resend)
