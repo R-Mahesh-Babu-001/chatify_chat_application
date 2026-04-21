@@ -24,7 +24,10 @@ export const useAuthStore = create((set, get) => ({
       get().connectSocket();
     } catch (error) {
       console.log("Error in authCheck:", error);
-      set({ authUser: null });
+      // Avoid overriding a successful login/signup when this initial check resolves late.
+      if (!get().authUser) {
+        set({ authUser: null });
+      }
     } finally {
       set({ isCheckingAuth: false });
     }
@@ -34,7 +37,7 @@ export const useAuthStore = create((set, get) => ({
     set({ isSigningUp: true });
     try {
       const res = await axiosInstance.post("/auth/signup", data);
-      set({ authUser: res.data });
+      set({ authUser: res.data, isCheckingAuth: false });
 
       toast.success("Account created successfully!");
       get().connectSocket();
@@ -51,7 +54,7 @@ export const useAuthStore = create((set, get) => ({
     set({ isLoggingIn: true });
     try {
       const res = await axiosInstance.post("/auth/login", data);
-      set({ authUser: res.data });
+      set({ authUser: res.data, isCheckingAuth: false });
 
       toast.success("Logged in successfully");
 
