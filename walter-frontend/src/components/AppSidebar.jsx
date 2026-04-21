@@ -1,13 +1,16 @@
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
-import { MessageCircleIcon, UsersIcon, SettingsIcon, LogOutIcon, CameraIcon, Loader2 } from "lucide-react";
+import { MessageCircleIcon, UsersIcon, SettingsIcon, LogOutIcon, CameraIcon, Loader2, PlusIcon } from "lucide-react";
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router";
 
 function AppSidebar() {
   const { authUser, logout, updateProfile } = useAuthStore();
-  const { activeTab, setActiveTab, setChatFilter } = useChatStore();
+  const { activeTab, setActiveTab, setChatFilter, addWebsiteChat } = useChatStore();
   const [isUploading, setIsUploading] = useState(false);
+  const [isUrlModalOpen, setIsUrlModalOpen] = useState(false);
+  const [websiteName, setWebsiteName] = useState("");
+  const [websiteUrl, setWebsiteUrl] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
   const isSettings = location.pathname.startsWith("/settings");
@@ -16,6 +19,15 @@ function AppSidebar() {
     setActiveTab(tab);
     if (tab === "chats") {
       setChatFilter("all"); // Reset to "all" when switching to chats
+    }
+  };
+
+  const handleOpenWebsite = async () => {
+    const saved = await addWebsiteChat(websiteUrl, websiteName);
+    if (saved) {
+      setWebsiteName("");
+      setWebsiteUrl("");
+      setIsUrlModalOpen(false);
     }
   };
 
@@ -142,6 +154,11 @@ function AppSidebar() {
             navigate("/");
           }}
         />
+        <SidebarIcon
+          icon={PlusIcon}
+          label="Open Website"
+          onClick={() => setIsUrlModalOpen(true)}
+        />
         {/* Mobile only Settings/Logout (Optional compression) */}
         <div className="md:hidden">
           <SidebarIcon
@@ -170,6 +187,64 @@ function AppSidebar() {
           onClick={logout}
         />
       </div>
+
+      {isUrlModalOpen && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/70 px-4">
+          <div className="w-full max-w-sm rounded-2xl border border-[#1f1f1f] bg-[#0f0f0f] shadow-2xl">
+            <div className="border-b border-[#1a1a1a] px-5 py-4">
+              <h3 className="text-base font-semibold text-white">Open Website</h3>
+              <p className="mt-1 text-xs text-[#9b9b9b]">Enter any website URL</p>
+            </div>
+
+            <div className="space-y-3 px-5 py-4">
+              <input
+                type="text"
+                value={websiteName}
+                onChange={(e) => setWebsiteName(e.target.value)}
+                placeholder="Custom name (optional)"
+                className="w-full rounded-lg border border-[#1f1f1f] bg-[#131313] px-3 py-2 text-sm text-white placeholder-[#747474] outline-none transition focus:border-[#e50914]"
+              />
+              <input
+                type="text"
+                value={websiteUrl}
+                onChange={(e) => setWebsiteUrl(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleOpenWebsite();
+                  if (e.key === "Escape") {
+                    setIsUrlModalOpen(false);
+                    setWebsiteName("");
+                    setWebsiteUrl("");
+                  }
+                }}
+                autoFocus
+                placeholder="https://example.com"
+                className="w-full rounded-lg border border-[#1f1f1f] bg-[#131313] px-3 py-2 text-sm text-white placeholder-[#747474] outline-none transition focus:border-[#e50914]"
+              />
+            </div>
+
+            <div className="flex justify-end gap-2 border-t border-[#1a1a1a] px-5 py-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsUrlModalOpen(false);
+                  setWebsiteName("");
+                  setWebsiteUrl("");
+                }}
+                className="rounded-lg border border-[#2a2a2a] px-3 py-2 text-xs font-medium text-[#c7c7c7] hover:bg-[#151515]"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleOpenWebsite}
+                className="rounded-lg bg-[#e50914] px-3 py-2 text-xs font-semibold text-white hover:bg-[#ff1f2b]"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </aside>
   );
 }

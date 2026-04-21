@@ -6,6 +6,7 @@ import ProfileHeader from "../components/ProfileHeader";
 import ChatsList from "../components/ChatsList";
 import ContactList from "../components/ContactList";
 import ChatContainer from "../components/ChatContainer";
+import WebsiteContainer from "../components/WebsiteContainer";
 import NoConversationPlaceholder from "../components/NoConversationPlaceholder";
 import SettingsPanel from "../components/SettingsPanel";
 import { useLocation } from "react-router";
@@ -51,6 +52,8 @@ function ChatPage() {
           <div className="flex-1 flex items-center justify-center text-[#7a7a7a]">
             <p className="text-sm">Select a settings option</p>
           </div>
+        ) : selectedUser?.type === "website" ? (
+          <WebsiteContainer />
         ) : selectedUser ? (
           <ChatContainer />
         ) : (

@@ -7,11 +7,13 @@ export const useChatStore = create((set, get) => ({
   allContacts: [],
   chats: [],
   groups: [],
+  websiteChats: [],
   messages: [],
   activeTab: "chats",
   chatFilter: "all", // "all", "unread", "groups"
   selectedUser: null, // This can be a User or a Group object
   isUsersLoading: false,
+  isWebsitesLoading: false,
   isMessagesLoading: false,
   isGroupsLoading: false,
   isGroupModalOpen: false, // New global state for modal
@@ -27,6 +29,91 @@ export const useChatStore = create((set, get) => ({
   setActiveTab: (tab) => set({ activeTab: tab }),
   setChatFilter: (filter) => set({ chatFilter: filter }),
   setSelectedUser: (selectedUser) => set({ selectedUser }),
+
+  getWebsiteChats: async () => {
+    set({ isWebsitesLoading: true });
+    try {
+      const res = await axiosInstance.get("/websites");
+      const websiteChats = (res.data || []).map((item) => ({
+        ...item,
+        type: "website",
+        fullName: item.name,
+      }));
+      set({ websiteChats });
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to fetch websites");
+    } finally {
+      set({ isWebsitesLoading: false });
+    }
+  },
+
+  addWebsiteChat: async (rawUrl, name) => {
+    try {
+      const res = await axiosInstance.post("/websites", {
+        websiteUrl: rawUrl,
+        name,
+      });
+
+      const websiteChat = {
+        ...res.data,
+        type: "website",
+        fullName: res.data.name,
+      };
+
+      set((state) => {
+        const filtered = state.websiteChats.filter((item) => item._id !== websiteChat._id);
+        return {
+          websiteChats: [websiteChat, ...filtered],
+          selectedUser: websiteChat,
+          activeTab: "chats",
+          chatFilter: "all",
+        };
+      });
+
+      toast.success("Website saved");
+      return websiteChat;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to save website");
+      return null;
+    }
+  },
+
+  updateWebsiteChat: async (id, data) => {
+    try {
+      const res = await axiosInstance.put(`/websites/${id}`, data);
+      const updated = {
+        ...res.data,
+        type: "website",
+        fullName: res.data.name,
+      };
+
+      set((state) => ({
+        websiteChats: state.websiteChats.map((item) => (item._id === id ? updated : item)),
+        selectedUser: state.selectedUser?._id === id ? updated : state.selectedUser,
+      }));
+
+      toast.success("Website updated");
+      return updated;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to update website");
+      return null;
+    }
+  },
+
+  deleteWebsiteChat: async (id) => {
+    try {
+      await axiosInstance.delete(`/websites/${id}`);
+      set((state) => ({
+        websiteChats: state.websiteChats.filter((item) => item._id !== id),
+        selectedUser: state.selectedUser?._id === id ? null : state.selectedUser,
+      }));
+      toast.success("Website deleted");
+      return true;
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to delete website");
+      return false;
+    }
+  },
 
   getAllContacts: async () => {
     set({ isUsersLoading: true });
