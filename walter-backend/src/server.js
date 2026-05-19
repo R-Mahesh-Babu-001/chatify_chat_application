@@ -31,6 +31,14 @@ app.use(
 );
 app.use(cookieParser());
 
+app.get("/", (_, res) => {
+  res.status(200).json({
+    ok: true,
+    service: "chatify-backend",
+    message: "Backend is running. Use /api/health for health checks.",
+  });
+});
+
 app.get("/api/health", (_, res) => {
   res.status(200).json({ ok: true, service: "chatify-backend" });
 });
