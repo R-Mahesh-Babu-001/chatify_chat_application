@@ -118,6 +118,9 @@ export const updateWebsiteChat = async (req, res) => {
 export const deleteWebsiteChat = async (req, res) => {
   try {
     const { id } = req.params;
+    const existing = await WebsiteChat.findOne({ _id: id, userId: req.user._id });
+    if (!existing) return res.status(404).json({ message: "Website chat not found" });
+
     const deleted = await WebsiteChat.findOneAndDelete({ _id: id, userId: req.user._id });
 
     if (!deleted) return res.status(404).json({ message: "Website chat not found" });

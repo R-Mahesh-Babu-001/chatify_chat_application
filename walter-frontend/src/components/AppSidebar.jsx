@@ -6,9 +6,16 @@ import { useLocation, useNavigate } from "react-router";
 
 function AppSidebar() {
   const { authUser, logout, updateProfile } = useAuthStore();
-  const { activeTab, setActiveTab, setChatFilter, addWebsiteChat } = useChatStore();
+  const {
+    activeTab,
+    setActiveTab,
+    setChatFilter,
+    addWebsiteChat,
+    isWebsiteModalOpen,
+    setIsWebsiteModalOpen,
+    setSelectedUser,
+  } = useChatStore();
   const [isUploading, setIsUploading] = useState(false);
-  const [isUrlModalOpen, setIsUrlModalOpen] = useState(false);
   const [websiteName, setWebsiteName] = useState("");
   const [websiteUrl, setWebsiteUrl] = useState("");
   const navigate = useNavigate();
@@ -22,12 +29,19 @@ function AppSidebar() {
     }
   };
 
+  const handleOpenWebsiteModal = () => {
+    setSelectedUser(null);
+    setActiveTab("chats");
+    setChatFilter("all");
+    setIsWebsiteModalOpen(true);
+  };
+
   const handleOpenWebsite = async () => {
     const saved = await addWebsiteChat(websiteUrl, websiteName);
     if (saved) {
       setWebsiteName("");
       setWebsiteUrl("");
-      setIsUrlModalOpen(false);
+      setIsWebsiteModalOpen(false);
     }
   };
 
@@ -157,7 +171,7 @@ function AppSidebar() {
         <SidebarIcon
           icon={PlusIcon}
           label="Open Website"
-          onClick={() => setIsUrlModalOpen(true)}
+          onClick={handleOpenWebsiteModal}
         />
         {/* Mobile only Settings/Logout (Optional compression) */}
         <div className="md:hidden">
@@ -188,7 +202,7 @@ function AppSidebar() {
         />
       </div>
 
-      {isUrlModalOpen && (
+      {isWebsiteModalOpen && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center bg-black/70 px-4">
           <div className="w-full max-w-sm rounded-2xl border border-[#1f1f1f] bg-[#0f0f0f] shadow-2xl">
             <div className="border-b border-[#1a1a1a] px-5 py-4">
@@ -211,7 +225,7 @@ function AppSidebar() {
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleOpenWebsite();
                   if (e.key === "Escape") {
-                    setIsUrlModalOpen(false);
+                    setIsWebsiteModalOpen(false);
                     setWebsiteName("");
                     setWebsiteUrl("");
                   }
@@ -226,7 +240,7 @@ function AppSidebar() {
               <button
                 type="button"
                 onClick={() => {
-                  setIsUrlModalOpen(false);
+                  setIsWebsiteModalOpen(false);
                   setWebsiteName("");
                   setWebsiteUrl("");
                 }}

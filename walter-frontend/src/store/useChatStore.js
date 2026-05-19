@@ -17,9 +17,11 @@ export const useChatStore = create((set, get) => ({
   isMessagesLoading: false,
   isGroupsLoading: false,
   isGroupModalOpen: false, // New global state for modal
+  isWebsiteModalOpen: false,
   isSoundEnabled: JSON.parse(localStorage.getItem("isSoundEnabled")) === true,
 
   setIsGroupModalOpen: (isOpen) => set({ isGroupModalOpen: isOpen }),
+  setIsWebsiteModalOpen: (isOpen) => set({ isWebsiteModalOpen: isOpen }),
 
   toggleSound: () => {
     localStorage.setItem("isSoundEnabled", !get().isSoundEnabled);
@@ -39,6 +41,11 @@ export const useChatStore = create((set, get) => ({
         type: "website",
         fullName: item.name,
       }));
+      websiteChats.sort((a, b) => {
+        if (a.slug === "truly-pdf") return -1;
+        if (b.slug === "truly-pdf") return 1;
+        return 0;
+      });
       set({ websiteChats });
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to fetch websites");
@@ -64,7 +71,6 @@ export const useChatStore = create((set, get) => ({
         const filtered = state.websiteChats.filter((item) => item._id !== websiteChat._id);
         return {
           websiteChats: [websiteChat, ...filtered],
-          selectedUser: websiteChat,
           activeTab: "chats",
           chatFilter: "all",
         };

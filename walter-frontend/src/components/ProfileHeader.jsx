@@ -3,7 +3,14 @@ import { useChatStore } from "../store/useChatStore";
 import ActiveTabSwitch from "./ActiveTabSwitch";
 
 function ProfileHeader() {
-  const { activeTab } = useChatStore();
+  const { activeTab, setIsWebsiteModalOpen, setSelectedUser, setActiveTab, setChatFilter } = useChatStore();
+
+  const handleOpenWebsiteModal = () => {
+    setSelectedUser(null);
+    setActiveTab("chats");
+    setChatFilter("all");
+    setIsWebsiteModalOpen(true);
+  };
 
   return (
     <div className="px-4 bg-[#0f0f0f] border-b border-[#1a1a1a] h-16 flex items-center">
@@ -16,9 +23,9 @@ function ProfileHeader() {
         </div>
         <div className="flex items-center gap-4">
           <button
-            onClick={() => useChatStore.getState().setIsGroupModalOpen(true)}
+            onClick={handleOpenWebsiteModal}
             className="text-[#aebac1] hover:text-[#e50914] transition-colors"
-            title="New Group (or Chat)"
+            title="Add Website"
           >
             <MessageSquarePlusIcon className="w-6 h-6" />
           </button>

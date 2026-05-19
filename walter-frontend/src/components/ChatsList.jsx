@@ -112,9 +112,10 @@ function ChatsList() {
 
       {displayItems.map((item) => {
         const isWebsite = item.type === "website";
+        const isTrulyPdf = item.slug === "truly-pdf";
         const isGroup = item.admin !== undefined;
         const name = isWebsite ? item.fullName : isGroup ? item.name : item.fullName;
-        const image = item.profilePic || "/avatar.png";
+        const image = isTrulyPdf ? "/icon-192.png" : item.profilePic || "/avatar.png";
         const isOnline = !isWebsite && !isGroup && onlineUsers.includes(item._id);
         const websiteSubtitle = item.websiteUrl
           ? item.websiteUrl.replace(/^https?:\/\//i, "")
@@ -143,13 +144,14 @@ function ChatsList() {
                 <button
                   type="button"
                   onClick={() => setMenuOpenId(menuOpenId === item._id ? null : item._id)}
-                  className="rounded-md p-1 text-[#aebac1] hover:bg-[#1a1a1a] hover:text-white"
+                  className="rounded-md p-1.5 text-[#aebac1] hover:bg-[#1a1a1a] hover:text-white"
+                  title="Website actions"
                 >
                   <MoreVertical className="h-4 w-4" />
                 </button>
 
                 {menuOpenId === item._id && (
-                  <div className="absolute right-0 top-8 z-20 min-w-[140px] rounded-lg border border-[#1f1f1f] bg-[#0f0f0f] py-1 shadow-2xl">
+                  <div className="absolute right-0 top-8 z-20 min-w-[150px] rounded-lg border border-[#1f1f1f] bg-[#0f0f0f] py-1 shadow-2xl">
                     <button
                       type="button"
                       onClick={() => openEditModal(item)}

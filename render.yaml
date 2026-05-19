@@ -2,9 +2,11 @@ services:
   - type: web
     name: chatify-backend
     runtime: node
+    plan: free
     rootDir: walter-backend
     buildCommand: npm install
     startCommand: npm run start
+    healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
         value: production
@@ -36,6 +38,7 @@ services:
   - type: web
     name: chatify-frontend
     runtime: static
+    plan: free
     rootDir: walter-frontend
     buildCommand: npm install && npm run build
     staticPublishPath: dist

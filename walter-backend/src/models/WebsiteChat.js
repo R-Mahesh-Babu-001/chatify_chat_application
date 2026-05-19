@@ -25,11 +25,23 @@ const websiteChatSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
+    slug: {
+      type: String,
+      default: "",
+      trim: true,
+      maxlength: 80,
+    },
+    isSystem: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
   },
   { timestamps: true }
 );
 
 websiteChatSchema.index({ userId: 1, websiteUrl: 1 }, { unique: true });
+websiteChatSchema.index({ userId: 1, slug: 1 }, { unique: true, partialFilterExpression: { slug: { $type: "string", $ne: "" } } });
 
 const WebsiteChat = mongoose.model("WebsiteChat", websiteChatSchema);
 
