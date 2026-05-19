@@ -3,10 +3,17 @@ import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 
+const normalizeApiBase = (rawValue) => {
+  if (!rawValue) return "/api";
+  const trimmed = rawValue.trim().replace(/\/+$/, "");
+  if (!trimmed) return "/api";
+  return /\/api$/i.test(trimmed) ? trimmed : `${trimmed}/api`;
+};
+
 const API_URL =
   import.meta.env.MODE === "development"
-    ? "http://localhost:5001"
-    : import.meta.env.VITE_API_URL || "/api";
+    ? "http://localhost:5001/api"
+    : normalizeApiBase(import.meta.env.VITE_API_URL);
 const BASE_URL = API_URL.replace(/\/api\/?$/, "") || "/";
 
 export const useAuthStore = create((set, get) => ({
