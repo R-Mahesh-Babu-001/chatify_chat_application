@@ -34,11 +34,11 @@ Highlights:
 
 ##  .env Setup
 
-### Backend (`/backend`)
+### Backend (`/walter-backend`)
 
 ```bash
 PORT=3000
-MONGO_URI=your_mongo_uri_here
+MONGO_URI=mongodb+srv://<db_user>:<db_password>@<cluster-name>.mongodb.net/chatify?retryWrites=true&w=majority&appName=<cluster-name>
 
 NODE_ENV=development
 
@@ -63,7 +63,7 @@ ARCJET_ENV=development
 ##  Run the Backend
 
 ```bash
-cd backend
+cd walter-backend
 npm install
 npm run dev
 ```
@@ -71,7 +71,39 @@ npm run dev
 ##  Run the Frontend
 
 ```bash
-cd frontend
+cd walter-frontend
 npm install
 npm run dev
+```
+
+---
+
+## MongoDB Atlas Free Tier (M0)
+
+1. Create a free `M0` cluster in MongoDB Atlas.
+2. Create a database user with `readWrite` access.
+3. In `Network Access`, allow your Render backend to connect.
+For quick setup, add `0.0.0.0/0` and tighten later.
+4. Copy the Atlas connection string and set database name to `chatify`.
+
+Example:
+
+```text
+mongodb+srv://<db_user>:<db_password>@<cluster-name>.mongodb.net/chatify?retryWrites=true&w=majority&appName=<cluster-name>
+```
+
+5. In Render backend service (`chatify-backend`) set:
+- `MONGO_URI` = Atlas URI above
+- `NODE_ENV` = `production`
+- `PORT` = `5001`
+- `CLIENT_URL` = `https://<your-frontend-service>.onrender.com` (no trailing slash)
+
+6. In Render frontend service (`chatify-frontend`) set:
+- `VITE_API_URL` = `https://<your-backend-service>.onrender.com/api`
+
+If you use more than one frontend origin, set backend `CLIENT_URL` as a comma-separated list.
+Example:
+
+```text
+https://chatify-frontend.onrender.com,http://localhost:5173
 ```

@@ -14,10 +14,26 @@ import { app, server } from "./lib/socket.js";
 const __dirname = path.resolve();
 
 const PORT = ENV.PORT || 3000;
+const allowedOrigins = ENV.CLIENT_ORIGINS;
 
 app.use(express.json({ limit: "5mb" })); // req.body
-app.use(cors({ origin: ENV.CLIENT_URL, credentials: true }));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow non-browser clients and same-origin requests with no Origin header.
+      if (!origin) return callback(null, true);
+      const normalizedOrigin = origin.replace(/\/+$/, "");
+      if (allowedOrigins.includes(normalizedOrigin)) return callback(null, true);
+      return callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
+    credentials: true,
+  })
+);
 app.use(cookieParser());
+
+app.get("/api/health", (_, res) => {
+  res.status(200).json({ ok: true, service: "chatify-backend" });
+});
 
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
