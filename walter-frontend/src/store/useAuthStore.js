@@ -43,13 +43,17 @@ export const useAuthStore = create((set, get) => ({
   signup: async (data) => {
     set({ isSigningUp: true });
     try {
-      const res = await axiosInstance.post("/auth/signup", data);
-      set({ authUser: res.data, isCheckingAuth: false });
+      await axiosInstance.post("/auth/signup", data);
+      const verify = await axiosInstance.get("/auth/check");
+      set({ authUser: verify.data, isCheckingAuth: false });
 
       toast.success("Account created successfully!");
       get().connectSocket();
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || "Signup failed";
+      const isCookieProblem = error.response?.status === 401;
+      const errorMessage = isCookieProblem
+        ? "Login cookie was not stored. Check frontend/backend URL env settings."
+        : error.response?.data?.message || error.message || "Signup failed";
       toast.error(errorMessage);
       console.error("Signup error:", error);
     } finally {
@@ -60,14 +64,18 @@ export const useAuthStore = create((set, get) => ({
   login: async (data) => {
     set({ isLoggingIn: true });
     try {
-      const res = await axiosInstance.post("/auth/login", data);
-      set({ authUser: res.data, isCheckingAuth: false });
+      await axiosInstance.post("/auth/login", data);
+      const verify = await axiosInstance.get("/auth/check");
+      set({ authUser: verify.data, isCheckingAuth: false });
 
       toast.success("Logged in successfully");
 
       get().connectSocket();
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || "Login failed";
+      const isCookieProblem = error.response?.status === 401;
+      const errorMessage = isCookieProblem
+        ? "Login cookie was not stored. Check frontend/backend URL env settings."
+        : error.response?.data?.message || error.message || "Login failed";
       toast.error(errorMessage);
       console.error("Login error:", error);
     } finally {

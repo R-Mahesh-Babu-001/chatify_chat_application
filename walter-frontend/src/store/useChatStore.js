@@ -3,6 +3,36 @@ import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 import { useAuthStore } from "./useAuthStore";
 
+let unauthorizedToastAt = 0;
+
+const getErrorMessage = (error, fallback) => error?.response?.data?.message || fallback;
+
+const handleStoreError = (error, fallbackMessage) => {
+  if (error?.response?.status === 401) {
+    const now = Date.now();
+    if (now - unauthorizedToastAt > 4000) {
+      unauthorizedToastAt = now;
+      toast.error("Session expired. Please login again.");
+    }
+
+    const auth = useAuthStore.getState();
+    if (auth.socket?.connected) {
+      auth.socket.disconnect();
+    }
+
+    useAuthStore.setState({
+      authUser: null,
+      socket: null,
+      onlineUsers: [],
+      isCheckingAuth: false,
+    });
+
+    return;
+  }
+
+  toast.error(getErrorMessage(error, fallbackMessage));
+};
+
 export const useChatStore = create((set, get) => ({
   allContacts: [],
   chats: [],
@@ -48,7 +78,7 @@ export const useChatStore = create((set, get) => ({
       });
       set({ websiteChats });
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to fetch websites");
+      handleStoreError(error, "Failed to fetch websites");
     } finally {
       set({ isWebsitesLoading: false });
     }
@@ -79,7 +109,7 @@ export const useChatStore = create((set, get) => ({
       toast.success("Website saved");
       return websiteChat;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to save website");
+      handleStoreError(error, "Failed to save website");
       return null;
     }
   },
@@ -101,7 +131,7 @@ export const useChatStore = create((set, get) => ({
       toast.success("Website updated");
       return updated;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to update website");
+      handleStoreError(error, "Failed to update website");
       return null;
     }
   },
@@ -116,7 +146,7 @@ export const useChatStore = create((set, get) => ({
       toast.success("Website deleted");
       return true;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to delete website");
+      handleStoreError(error, "Failed to delete website");
       return false;
     }
   },
@@ -127,7 +157,7 @@ export const useChatStore = create((set, get) => ({
       const res = await axiosInstance.get("/messages/contacts");
       set({ allContacts: res.data });
     } catch (error) {
-      toast.error(error.response.data.message);
+      handleStoreError(error, "Failed to fetch contacts");
     } finally {
       set({ isUsersLoading: false });
     }
@@ -139,7 +169,7 @@ export const useChatStore = create((set, get) => ({
       const res = await axiosInstance.get("/messages/chats");
       set({ chats: res.data });
     } catch (error) {
-      toast.error(error.response.data.message);
+      handleStoreError(error, "Failed to fetch chats");
     } finally {
       set({ isUsersLoading: false });
     }
@@ -151,7 +181,7 @@ export const useChatStore = create((set, get) => ({
       const res = await axiosInstance.get("/groups");
       set({ groups: res.data });
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to fetch groups");
+      handleStoreError(error, "Failed to fetch groups");
     } finally {
       set({ isGroupsLoading: false });
     }
@@ -169,7 +199,7 @@ export const useChatStore = create((set, get) => ({
 
       return res.data;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Failed to create group");
+      handleStoreError(error, "Failed to create group");
       throw error;
     }
   },
@@ -190,7 +220,7 @@ export const useChatStore = create((set, get) => ({
 
       await axiosInstance.post(`/messages/seen/${id}`, { isGroup });
     } catch (error) {
-      toast.error(error.response?.data?.message || "Something went wrong");
+      handleStoreError(error, "Something went wrong");
     } finally {
       set({ isMessagesLoading: false });
     }
@@ -227,7 +257,7 @@ export const useChatStore = create((set, get) => ({
       }));
     } catch (error) {
       set({ messages: messages });
-      toast.error(error.response?.data?.message || "Something went wrong");
+      handleStoreError(error, "Something went wrong");
     }
   },
 
@@ -239,7 +269,7 @@ export const useChatStore = create((set, get) => ({
       await axiosInstance.post(`/messages/delete/${messageId}`, { scope });
     } catch (error) {
       set({ messages: previous });
-      toast.error(error.response?.data?.message || "Failed to delete message");
+      handleStoreError(error, "Failed to delete message");
     }
   },
 
