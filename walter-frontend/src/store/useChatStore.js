@@ -3,6 +3,7 @@ import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 import { useAuthStore } from "./useAuthStore";
 
+const AUTH_TOKEN_KEY = "chatify_auth_token";
 let unauthorizedToastAt = 0;
 
 const getErrorMessage = (error, fallback) => error?.response?.data?.message || fallback;
@@ -26,6 +27,7 @@ const handleStoreError = (error, fallbackMessage) => {
       onlineUsers: [],
       isCheckingAuth: false,
     });
+    localStorage.removeItem(AUTH_TOKEN_KEY);
 
     return;
   }

@@ -3,6 +3,8 @@ import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 
+const AUTH_TOKEN_KEY = "chatify_auth_token";
+
 const normalizeApiBase = (rawValue) => {
   if (!rawValue) return "/api";
   const trimmed = rawValue.trim().replace(/\/+$/, "");
@@ -33,6 +35,7 @@ export const useAuthStore = create((set, get) => ({
       console.log("Error in authCheck:", error);
       // Avoid overriding a successful login/signup when this initial check resolves late.
       if (!get().authUser) {
+        localStorage.removeItem(AUTH_TOKEN_KEY);
         set({ authUser: null });
       }
     } finally {
@@ -43,17 +46,17 @@ export const useAuthStore = create((set, get) => ({
   signup: async (data) => {
     set({ isSigningUp: true });
     try {
-      await axiosInstance.post("/auth/signup", data);
-      const verify = await axiosInstance.get("/auth/check");
-      set({ authUser: verify.data, isCheckingAuth: false });
+      const res = await axiosInstance.post("/auth/signup", data);
+      if (res.data?.token) {
+        localStorage.setItem(AUTH_TOKEN_KEY, res.data.token);
+      }
+      set({ authUser: res.data, isCheckingAuth: false });
 
       toast.success("Account created successfully!");
       get().connectSocket();
     } catch (error) {
-      const isCookieProblem = error.response?.status === 401;
-      const errorMessage = isCookieProblem
-        ? "Login cookie was not stored. Check frontend/backend URL env settings."
-        : error.response?.data?.message || error.message || "Signup failed";
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+      const errorMessage = error.response?.data?.message || error.message || "Signup failed";
       toast.error(errorMessage);
       console.error("Signup error:", error);
     } finally {
@@ -64,18 +67,18 @@ export const useAuthStore = create((set, get) => ({
   login: async (data) => {
     set({ isLoggingIn: true });
     try {
-      await axiosInstance.post("/auth/login", data);
-      const verify = await axiosInstance.get("/auth/check");
-      set({ authUser: verify.data, isCheckingAuth: false });
+      const res = await axiosInstance.post("/auth/login", data);
+      if (res.data?.token) {
+        localStorage.setItem(AUTH_TOKEN_KEY, res.data.token);
+      }
+      set({ authUser: res.data, isCheckingAuth: false });
 
       toast.success("Logged in successfully");
 
       get().connectSocket();
     } catch (error) {
-      const isCookieProblem = error.response?.status === 401;
-      const errorMessage = isCookieProblem
-        ? "Login cookie was not stored. Check frontend/backend URL env settings."
-        : error.response?.data?.message || error.message || "Login failed";
+      localStorage.removeItem(AUTH_TOKEN_KEY);
+      const errorMessage = error.response?.data?.message || error.message || "Login failed";
       toast.error(errorMessage);
       console.error("Login error:", error);
     } finally {
@@ -87,6 +90,7 @@ export const useAuthStore = create((set, get) => ({
     try {
       await axiosInstance.post("/auth/logout");
       set({ authUser: null });
+      localStorage.removeItem(AUTH_TOKEN_KEY);
       toast.success("Logged out successfully");
       get().disconnectSocket();
     } catch (error) {
@@ -111,9 +115,11 @@ export const useAuthStore = create((set, get) => ({
   connectSocket: () => {
     const { authUser } = get();
     if (!authUser || get().socket?.connected) return;
+    const token = localStorage.getItem(AUTH_TOKEN_KEY);
 
     const socket = io(BASE_URL, {
       withCredentials: true, // this ensures cookies are sent with the connection
+      auth: token ? { token } : undefined,
     });
 
     socket.connect();
@@ -128,5 +134,6 @@ export const useAuthStore = create((set, get) => ({
 
   disconnectSocket: () => {
     if (get().socket?.connected) get().socket.disconnect();
+    set({ socket: null, onlineUsers: [] });
   },
 }));
